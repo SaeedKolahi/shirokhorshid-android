@@ -210,6 +210,7 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
     private PsiphonTunnel m_tunnel;
     private VpnManager m_vpnManager = VpnManager.getInstance();
     private String m_lastUpstreamProxyErrorMessage;
+    private volatile String m_lastInproxyDiagMsg = "";
     private Handler m_Handler = new Handler();
 
     private PendingIntent m_notificationPendingIntent;
@@ -1702,10 +1703,156 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
                         MyLog.i(R.string.tunnel_connected_protocol, MyLog.Sensitivity.NOT_SENSITIVE, protocol);
                     }
                 }
+
+                // Inproxy connection diagnostic messages
+                // These show the phase-by-phase progress of each relay attempt.
+                // Note: PsiphonTunnel.java dispatches diagnostic notices via two
+                // code paths (PsiphonProviderNoticeHandler and handleNotice),
+                // causing duplicate onDiagnosticMessage calls. We deduplicate
+                // by tracking the last displayed message.
+                if (message.contains("inproxy-dial:")) {
+                    String diagMsg = parseInproxyDiagnostic(message);
+                    if (diagMsg != null) {
+                        // Deduplicate: suppress if identical to last message
+                        if (!diagMsg.equals(m_lastInproxyDiagMsg)) {
+                            m_lastInproxyDiagMsg = diagMsg;
+                            MyLog.i(R.string.conduit_diag, MyLog.Sensitivity.NOT_SENSITIVE, diagMsg);
+                        }
+                    }
+                    // Don't log the raw diagnostic JSON for inproxy-dial
+                    return;
+                }
                 
                 MyLog.i(now, message);
             }
         });
+    }
+
+    /**
+     * Format a Go duration string (e.g. "98.381771ms", "1.702052239s",
+     * "3m2.5s") into a human-friendly rounded form ("98ms", "1.7s", "3m2s").
+     */
+    private static String formatDuration(String goDuration) {
+        if (goDuration == null) return null;
+        try {
+            // Handle seconds: "1.702052239s" -> "1.7s"
+            if (goDuration.endsWith("s") && !goDuration.endsWith("ms")) {
+                // Could be "3m2.5s" — find the last non-digit-dot prefix
+                int sIdx = goDuration.lastIndexOf('s');
+                // Find where the seconds number starts (after 'm' if present)
+                int mIdx = goDuration.indexOf('m');
+                String secPart;
+                String prefix = "";
+                if (mIdx >= 0 && mIdx < sIdx) {
+                    prefix = goDuration.substring(0, mIdx + 1);
+                    secPart = goDuration.substring(mIdx + 1, sIdx);
+                } else {
+                    secPart = goDuration.substring(0, sIdx);
+                }
+                double secs = Double.parseDouble(secPart);
+                if (secs < 10) {
+                    return prefix + String.format("%.1fs", secs);
+                } else {
+                    return prefix + String.format("%.0fs", secs);
+                }
+            }
+            // Handle milliseconds: "98.381771ms" -> "98ms"
+            if (goDuration.endsWith("ms")) {
+                String numPart = goDuration.substring(0, goDuration.length() - 2);
+                double ms = Double.parseDouble(numPart);
+                return String.format("%.0fms", ms);
+            }
+            // Handle microseconds: "532.1µs" -> "<1ms"
+            if (goDuration.contains("µs") || goDuration.contains("us")) {
+                return "<1ms";
+            }
+        } catch (NumberFormatException e) {
+            // Fall through to return original
+        }
+        return goDuration;
+    }
+
+    /**
+     * Parse inproxy diagnostic messages from tunnel-core and return a
+     * human-readable string for display in the logs tab.
+     *
+     * Messages arrive from PsiphonTunnel.java formatted as:
+     *   "Info: {"message":"inproxy-dial: ICE gathering OK","duration":"320ms","trace":"..."}"
+     *
+     * i.e. noticeType + ": " + data.toString()
+     *
+     * We strip the noticeType prefix, parse the JSON data object, extract the
+     * phase from "message", and append key diagnostic fields.
+     */
+    private static String parseInproxyDiagnostic(String diagnosticMessage) {
+        try {
+            // The message format is "NoticeType: {json data object}"
+            // Strip the prefix to get the JSON data object
+            String jsonStr = diagnosticMessage;
+            int colonSpace = diagnosticMessage.indexOf(": {");
+            if (colonSpace >= 0) {
+                jsonStr = diagnosticMessage.substring(colonSpace + 2);
+            }
+
+            org.json.JSONObject data = new org.json.JSONObject(jsonStr);
+
+            String msg = data.optString("message", "");
+            if (!msg.startsWith("inproxy-dial:")) return null;
+
+            // Extract the phase description after "inproxy-dial: "
+            String phase = msg.substring("inproxy-dial: ".length());
+
+            StringBuilder sb = new StringBuilder(phase);
+
+            // Append diagnostic fields if present
+            String duration = formatDuration(data.optString("duration", null));
+            if (duration != null) {
+                sb.append(" (").append(duration).append(")");
+            }
+
+            String timeout = formatDuration(data.optString("timeout", null));
+            if (timeout != null) {
+                sb.append(" [timeout=").append(timeout).append("]");
+            }
+
+            String natType = data.optString("natType", null);
+            if (natType != null) {
+                sb.append(" [NAT=").append(natType).append("]");
+            }
+
+            String attempt = data.optString("attempt", null);
+            if (attempt != null) {
+                sb.insert(0, "#" + attempt + " ");
+            }
+
+            String error = data.optString("error", null);
+            if (error != null) {
+                // Truncate long error messages for readability
+                if (error.length() > 120) {
+                    error = error.substring(0, 120) + "...";
+                }
+                sb.append(" | ").append(error);
+            }
+
+            return sb.toString();
+        } catch (org.json.JSONException e) {
+            // Fallback: extract just the phase text after "inproxy-dial: "
+            // and before any JSON artifacts (comma or closing brace)
+            if (diagnosticMessage.contains("inproxy-dial:")) {
+                int idx = diagnosticMessage.indexOf("inproxy-dial: ");
+                if (idx >= 0) {
+                    String remainder = diagnosticMessage.substring(idx + "inproxy-dial: ".length());
+                    // Stop at first JSON artifact
+                    int end = remainder.indexOf("\",");
+                    if (end < 0) end = remainder.indexOf("\"}");
+                    if (end > 0) {
+                        return remainder.substring(0, end);
+                    }
+                    return remainder;
+                }
+            }
+            return null;
+        }
     }
 
     @Override

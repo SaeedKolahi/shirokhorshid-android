@@ -104,6 +104,7 @@
     <string name="conduit_proxy_trying">Trying Conduit relay (country: %s)</string>
     <string name="conduit_proxy_connected">Tunnel connected via Conduit (protocol: %1$s, country: %2$s)</string>
     <string name="conduit_proxy_connected_no_country">Tunnel connected via Conduit (protocol: %s)</string>
+    <string name="conduit_diag">[Conduit] %s</string>
     <string name="tunnel_connected_protocol">Tunnel connected (protocol: %s)</string>
     <string name="region_selector">Select server region</string>
     <string name="network_proxy_connect_invalid_values">Invalid HTTP Proxy settings</string>
