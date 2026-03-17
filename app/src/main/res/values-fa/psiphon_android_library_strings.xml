@@ -186,6 +186,8 @@
   <string name="conduit_proxy_connected">تونل از طریق Conduit متصل شد (پروتکل: %1$s، کشور: %2$s)</string>
   <string name="conduit_proxy_connected_no_country">تونل از طریق Conduit متصل شد (پروتکل: %s)</string>
   <string name="conduit_proxy_trying">در حال تلاش برای اتصال به رله Conduit (کشور: %s)</string>
+  <string name="beast_mode_active">حالت قدرتمند فعال — آزمایش همه پروتکل‌ها (%s کارگر)</string>
+  <string name="beast_mode_connected">حالت قدرتمند پس از %1$s تلاش در %2$s سرور متصل شد</string>
 
   <!-- Protocol selection preferences -->
   <string name="protocolSelectionPreferenceTitle">پروتکل اتصال</string>
@@ -196,6 +198,9 @@
   <string name="protocol_auto">خودکار (پیشنهادی)</string>
   <string name="protocol_conduit">رله‌های Conduit</string>
   <string name="protocol_direct">اتصال مستقیم</string>
+  <string name="beastModePreferenceTitle">حالت قدرتمند</string>
+  <string name="beastModePreferenceSummaryOn">اتصال تهاجمی: همه پروتکل‌ها را روی هر سرور امتحان می‌کند</string>
+  <string name="beastModePreferenceSummaryOff">اتصال عادی: پروتکل‌ها را به‌صورت تصادفی برای هر سرور انتخاب می‌کند</string>
 
   <!-- Reject censored country proxies -->
   <string name="rejectCensoredCountryProxiesPreferenceTitle">رد پروکسی‌های کشورهای سانسورشده</string>

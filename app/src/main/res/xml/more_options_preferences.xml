@@ -61,6 +61,13 @@
             android:entries="@array/protocol_selection_entries"
             android:entryValues="@array/protocol_selection_values"
             android:defaultValue="auto" />
+        <SwitchPreference
+            android:icon="@drawable/ic_beast_mode"
+            android:key="@string/beastModePreference"
+            android:title="@string/beastModePreferenceTitle"
+            android:summaryOn="@string/beastModePreferenceSummaryOn"
+            android:summaryOff="@string/beastModePreferenceSummaryOff"
+            android:defaultValue="true" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="conduitCategory"

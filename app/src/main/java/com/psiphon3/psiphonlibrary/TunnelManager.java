@@ -153,6 +153,7 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
         String egressRegion = PsiphonConstants.REGION_CODE_ANY;
         boolean disableTimeouts = false;
         String protocolSelection = "auto"; // "auto", "conduit", or "direct"
+        boolean beastMode = true; // aggressive establishment: try all protocols on all servers
         String conduitMode = "auto"; // "auto", "shirokhorshid", or "public"
         int conduitTimeoutSeconds = 180; // fallback timeout for auto conduit mode
         boolean rejectCensoredCountryProxies = true; // block conduits in censored countries
@@ -567,6 +568,9 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
             tunnelConfig.protocolSelection = multiProcessPreferences
                     .getString(getContext().getString(R.string.protocolSelectionPreference),
                             "auto");
+            tunnelConfig.beastMode = multiProcessPreferences
+                    .getBoolean(getContext().getString(R.string.beastModePreference),
+                            true);
             tunnelConfig.conduitMode = multiProcessPreferences
                     .getString(getContext().getString(R.string.conduitModePreference),
                             "auto");
@@ -1578,6 +1582,12 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
             }
             // For "auto" mode, don't set LimitTunnelProtocols - let Psiphon choose
 
+            // Beast mode: aggressive establishment, try all protocols on all servers
+            if (tunnelConfig.beastMode) {
+                json.put("AggressiveEstablishment", true);
+                MyLog.i("BeastMode", "enabled", true);
+            }
+
             json.put("EmitServerAlerts", true);
 
             JSONArray clientFeaturesJsonArray = new JSONArray();
@@ -1701,6 +1711,25 @@ public class TunnelManager implements PsiphonTunnel.HostService, VpnManager.VpnS
                     if (matcher.find()) {
                         String protocol = matcher.group(1);
                         MyLog.i(R.string.tunnel_connected_protocol, MyLog.Sensitivity.NOT_SENSITIVE, protocol);
+                    }
+                }
+
+                // Beast mode notices
+                if (message.contains("beast mode active (workers:")) {
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\(workers: (\\d+)\\)");
+                    java.util.regex.Matcher matcher = pattern.matcher(message);
+                    if (matcher.find()) {
+                        String workers = matcher.group(1);
+                        MyLog.i(R.string.beast_mode_active, MyLog.Sensitivity.NOT_SENSITIVE, workers);
+                    }
+                }
+                else if (message.contains("beast mode connected (attempts:")) {
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\(attempts: (\\d+), servers: (\\d+)\\)");
+                    java.util.regex.Matcher matcher = pattern.matcher(message);
+                    if (matcher.find()) {
+                        String attempts = matcher.group(1);
+                        String servers = matcher.group(2);
+                        MyLog.i(R.string.beast_mode_connected, MyLog.Sensitivity.NOT_SENSITIVE, attempts, servers);
                     }
                 }
 

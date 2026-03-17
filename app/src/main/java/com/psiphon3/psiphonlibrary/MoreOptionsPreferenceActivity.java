@@ -124,6 +124,14 @@ public class MoreOptionsPreferenceActivity extends LocalizedActivities.AppCompat
             protocolSelectionList.setValue(protocolValue);
             updateProtocolSelectionSummary(protocolSelectionList, protocolValue);
 
+            // Beast mode (aggressive establishment)
+            SwitchPreference beastModeSwitch =
+                    (SwitchPreference) preferences.findPreference(getString(R.string.beastModePreference));
+            if (beastModeSwitch != null) {
+                beastModeSwitch.setChecked(
+                        preferenceGetter.getBoolean(getString(R.string.beastModePreference), true));
+            }
+
             // Set initial conduit category visibility based on current protocol
             PreferenceCategory conduitCategory =
                     (PreferenceCategory) preferences.findPreference("conduitCategory");

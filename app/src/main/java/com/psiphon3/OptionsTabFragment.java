@@ -458,6 +458,7 @@ public class OptionsTabFragment extends PsiphonPreferenceFragmentCompat {
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.disableTimeoutsPreference), getString(R.string.disableTimeoutsPreference)),
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.nfcBumpPreference), getString(R.string.nfcBumpPreference)),
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.protocolSelectionPreference), getString(R.string.protocolSelectionPreference)),
+                new SharedPreferencesImport(requireContext(), prefName, getString(R.string.beastModePreference), getString(R.string.beastModePreference)),
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.conduitModePreference), getString(R.string.conduitModePreference)),
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.conduitTimeoutPreference), getString(R.string.conduitTimeoutPreference)),
                 new SharedPreferencesImport(requireContext(), prefName, getString(R.string.rejectCensoredCountryProxiesPreference), getString(R.string.rejectCensoredCountryProxiesPreference)),

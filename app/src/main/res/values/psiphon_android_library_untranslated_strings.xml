@@ -33,6 +33,7 @@
     <string name="disableTimeoutsPreference">disableTimeoutsPreference</string>
     <string name="forceConduitPreference" translatable="false">forceConduitPreference</string>
     <string name="protocolSelectionPreference" translatable="false">protocolSelectionPreference</string>
+    <string name="beastModePreference" translatable="false">beastModePreference</string>
     <string name="rejectCensoredCountryProxiesPreference" translatable="false">rejectCensoredCountryProxiesPreference</string>
     <string name="unsafeTrafficAlertsPreference" translatable="false">unsafeTrafficAlertsPreference</string>
     <string name="egressRegionPreference">egressRegionPreference</string>

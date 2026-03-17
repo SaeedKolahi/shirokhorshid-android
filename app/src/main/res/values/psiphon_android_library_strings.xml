@@ -99,9 +99,14 @@
     <string name="protocol_auto">Auto (Recommended)</string>
     <string name="protocol_conduit">Conduit Relays</string>
     <string name="protocol_direct">Direct Connection</string>
+    <string name="beastModePreferenceTitle">Beast Mode</string>
+    <string name="beastModePreferenceSummaryOn">Aggressive connection: tries all protocols on every server</string>
+    <string name="beastModePreferenceSummaryOff">Normal connection: randomly selects protocols per server</string>
     <string name="rejectCensoredCountryProxiesPreferenceTitle">Reject proxies in censored countries</string>
     <string name="rejectCensoredCountryProxiesPreferenceSummary">Block Conduit stations located in Iran, China, Russia, and other censored countries</string>
     <string name="conduit_proxy_trying">Trying Conduit relay (country: %s)</string>
+    <string name="beast_mode_active">Beast Mode active — testing all protocols (%s workers)</string>
+    <string name="beast_mode_connected">Beast Mode connected after %1$s attempts across %2$s servers</string>
     <string name="conduit_proxy_connected">Tunnel connected via Conduit (protocol: %1$s, country: %2$s)</string>
     <string name="conduit_proxy_connected_no_country">Tunnel connected via Conduit (protocol: %s)</string>
     <string name="conduit_diag">[Conduit] %s</string>
